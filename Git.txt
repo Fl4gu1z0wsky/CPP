@@ -1,0 +1,6 @@
+git clone https://github.com/FlavioSovilla/CPP.git
+git add ...
+git status
+git commit -m "..."
+git status
+git push -u origin master
