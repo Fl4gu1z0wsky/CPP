@@ -1,71 +1,137 @@
+/********************************************************
+ * Author       : Flavio Sovilla                        *
+ * Date         : 06.04.2020                            *
+ * Title        : sudoku.cpp                            *
+ * Description  : This program will help soving a       *
+ *                sudoku with backtracking              *
+********************************************************/
+
 #include <iostream>
 
-bool solving(int grid[9][9]);
+//Function to solve the sudoku
+bool solveEverything(int grid[9][9]);
 
-bool rowColBox(int posX, int posY, int grid[9][9]);
+//Function to find a free case
+bool emptyCase(int& posX, int& posY, int grid[9][9]);
 
-bool solving(int grid[9][9])
+//Function to see if everything is free
+bool isItCorrect(int posX, int posY, int grid[9][9], int number);
+
+//Function to see if a row is free
+bool isRowFree(int posX, int grid[9][9], int number);
+
+//Function to see if a column is free
+bool isColFree(int posY, int grid[9][9], int number);
+
+//Function to see if a box is free
+bool isBoxFree(int posX, int posY, int grid[9][9], int number);
+
+//Function to solve the sudoku
+bool solveEverything(int grid[9][9])
 {
-    int posX = 0;
-    int posY = 0;
-    bool isEmpty = false;
-    for (int i = 0; i < 9; i++)
+    int posX, posY;
+
+    //We check if a case is empty (= 0)
+    if(!emptyCase(posX, posY, grid))
+    {
+        //If not it's solved
+        return true;
+    }
+
+    //We check for every number possible (1 - 9)
+    for(int number = 1; number < 10; number++)
+    {
+        //Check the row, the column and the box
+        if(isItCorrect(posX, posY, grid, number))
+        {
+            //If it's free, we add the number
+            grid[posX][posY] = number;
+            //And we use again the function to check the other cases
+            if(solveEverything(grid))
+            {
+                return true;
+            }
+            //We put again the number if it doesn't match
+            grid[posX][posY] = 0;
+        }
+    }
+    return false;
+}
+
+//Function to find a free case
+bool emptyCase(int &posX, int &posY, int grid[9][9])
+{
+    for(int i = 0; i < 9; i++)
     {
         for(int j = 0; j < 9; j++)
         {
-            //Check if there is an empty case
-            if (grid[i][j] == 0)
+            //Check if there is an empty case (= 0)
+            if(grid[i][j] == 0)
             {
                 posX = i;
                 posY = j;
-                isEmpty = true;
-                break;
-            }  
-        }
-        if (isEmpty)
-        {
-            std::cout << posX << " : " << posY << "\n";
-            break;
+                return true;
+            }
         }
     }
+    return false;
 }
 
-bool rowColBox(int posX, int posY, int grid[9][9])
+//Function to see if everything is free
+bool isItCorrect(int posX, int posY, int grid[9][9], int number)
 {
-    int number = 1;
-    int isUsed = false;
-    //Check if the number is assigned
+    if(isRowFree(posX, grid, number) && isColFree(posY, grid, number) &&
+    isBoxFree(posX, posY, grid, number))
+    {
+        return true;
+    }
+    return false;
+}
 
-    //Row
-    for (int i = 0; i < 9; i++)
+//Function to see if a row is free
+bool isRowFree(int posX, int grid[9][9], int number)
+{
+    for(int i = 0; i < 9; i++)
     {
         if(grid[posX][i] == number)
         {
-            isUsed = true;
-        }
-        if(isUsed)
-        {
-            break;
+            return false;
         }
     }
+    return true;
+}
 
-    //Column
-    for (int i = 0; i < 9; i++)
+//Function to see if a column is free
+bool isColFree(int posY, int grid[9][9], int number)
+{
+    for(int i = 0; i < 9; i++)
     {
         if(grid[i][posY] == number)
         {
-            isUsed = true;
-        }
-        if(isUsed)
-        {
-            break;
+            return false;
         }
     }
-
-    //Box
-    
+    return true;
 }
 
+//Function to see if a box is free
+bool isBoxFree(int posX, int posY, int grid[9][9], int number)
+{
+    for(int i = 0; i < 3; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+            //We use modulo to find the start of the box and we check the 9 cases
+            if(grid[(posX - (posX % 3)) + i][(posY - (posY % 3)) + j] == number)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+//Main function
 int main() {
 
     //Initial matrice
@@ -79,5 +145,22 @@ int main() {
                       { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
                       { 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
 
-    solving(mat);
+    //If we have a solution
+    if(solveEverything(mat))
+    {
+        //We print the grid
+        for(int i = 0; i < 9; i++)
+        {
+            for(int j = 0; j < 9; j++)
+            {
+                std::cout << mat[i][j] << " ";
+            }
+            std::cout << "\n";
+        }
+    }
+    else
+    {
+        //There is no solution
+        std::cout << "There is no solution !\n";
+    }
 }
